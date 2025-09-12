@@ -1,125 +1,105 @@
-# Product Requirements Document
+<a href="https://demo-nextjs-with-supabase.vercel.app/">
+  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
+  <h1 align="center">Next.js and Supabase Starter Kit</h1>
+</a>
 
-## Product: CampusGuessr  
-**Team:** Collaborative Coding Club @ CWRU  
+<p align="center">
+ The fastest way to build apps with Next.js and Supabase
+</p>
 
----
+<p align="center">
+  <a href="#features"><strong>Features</strong></a> ·
+  <a href="#demo"><strong>Demo</strong></a> ·
+  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
+  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
+  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
+  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
+</p>
+<br/>
 
-# Phase 1: MVP (Single-Player)
+## Features
 
-### Objective
-Deliver a single-player, anonymous-playable campus guessing game with 360° images. Focus on the core game loop with minimum dependencies.
+- Works across the entire [Next.js](https://nextjs.org) stack
+  - App Router
+  - Pages Router
+  - Middleware
+  - Client
+  - Server
+  - It just works!
+- supabase-ssr. A package to configure Supabase Auth to use cookies
+- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
+- Styling with [Tailwind CSS](https://tailwindcss.com)
+- Components with [shadcn/ui](https://ui.shadcn.com/)
+- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
+  - Environment variables automatically assigned to Vercel project
 
-### Features
+## Demo
 
-#### Game Flow
-- 5 rounds per game (configurable later).  
-- Each round: show a 360° campus image → player drops a pin on the campus map → time-limited guess (default 30s–60s).  
-- After guess: reveal actual location, draw line, show distance + per-round score.  
-- After 5 rounds: total score summary.  
+You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
 
-#### Scoring
-- Distance-based scoring (GeoGuessr-style curve).  
-- Tightened scale for campus (max distance ≈ 1–2 km).  
-- Score range per round: 0–5000 points.  
+## Deploy to Vercel
 
-#### Content
-- Seed with ~50 campus 360° images (from existing resources).  
-- Store image URLs in Supabase Storage; metadata (lat, lng, image id) in Postgres.  
+Vercel deployment will guide you through creating a Supabase account and project.
 
-#### Platform
-- Web only (Next.js, React, Tailwind).  
-- Anonymous play (no login).  
+After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
 
-#### Deployment
-- Hosting on Vercel + Supabase free tier.  
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
 
----
+The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
 
-# Phase 2: Competitive & Social
+If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
 
-### Objective
-Introduce social play and personalization. Let students compete, track scores, and create custom games.
+## Clone and run locally
 
-### Features
+1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
 
-#### Authentication
-- Supabase Auth with nicknames or email-based login.  
-- Upgrade path to Case SSO if possible.  
+2. Create a Next.js app using the Supabase Starter template npx command
 
-#### Leaderboards
-- Global leaderboard (top scores).  
-- Time-based leaderboards (daily/weekly).  
+   ```bash
+   npx create-next-app --example with-supabase with-supabase-app
+   ```
 
-#### Multiplayer
-- Party leader sets rounds/time limit.  
-- Players join via link.  
-- Synchronous rounds: all players guess the same image per round.  
-- Lobby chat (optional).  
-- Session leaderboard after the game ends.  
+   ```bash
+   yarn create next-app --example with-supabase with-supabase-app
+   ```
 
-#### Custom Games (Basic)
-- Upload static photos with location tagging.  
-- Private links for sharing with friends (no moderation).  
+   ```bash
+   pnpm create next-app --example with-supabase with-supabase-app
+   ```
 
-#### Game Customization
-- Party leader can adjust:  
-  - Number of rounds.  
-  - Round timer.  
+3. Use `cd` to change into the app's directory
 
-#### Engagement
-- Share game invites and results via link.  
+   ```bash
+   cd with-supabase-app
+   ```
 
----
+4. Rename `.env.example` to `.env.local` and update the following:
 
-# Phase 3: Community Expansion
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=[INSERT SUPABASE PROJECT API ANON KEY]
+   ```
 
-### Objective
-Enable community-driven content and larger-scale events. Build features that let the game grow beyond the club.
+   Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
 
-### Features
+5. You can now run the Next.js local development server:
 
-#### Custom Game Builder
-- Full UI for uploading images, tagging on map, setting difficulty.  
-- Game code/link generation.  
+   ```bash
+   npm run dev
+   ```
 
-#### Content Moderation
-- Admin dashboard for reviewing and approving community uploads.  
-- Flag/report functionality.  
+   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
 
-#### Analytics
-- Track active players, most-played locations, average score per round.  
-- Export or dashboard for club organizers.  
+6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
 
-#### Mobile-First Polish
-- Optimize gestures for touch (drag pin, zoom).  
-- Add PWA (installable app feel).  
+> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
 
-#### Visual Polish
-- Better transitions/animations.  
-- Support for multiple map styles.  
+## Feedback and issues
 
----
+Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
 
-# Phase 4: Future / Stretch Goals
+## More Supabase examples
 
-### Objective
-Go beyond campus, make the platform adaptable to other contexts.
-
-### Features
-- Multi-campus support (Case + other universities).  
-- Public publishing of custom games.  
-- Advanced moderation (AI face/license plate blurring).  
-- 360° photo uploads via phone/cheap 360 cameras.  
-- Gamification (achievements, ranks, streaks).  
-- Monetization/hosting sponsorships if needed.  
-- Create iOS/Android app.  
-
----
-
-# Roadmap Timeline (Suggested)
-
-- **Phase 1 (MVP, ~5 weeks):** Single-player, 5 rounds, campus dataset.  
-- **Phase 2 (Weeks 6–12):** Leaderboards, multiplayer, basic custom uploads.  
-- **Phase 3 (Following Semester):** Community builder, tournaments, moderation, analytics.  
-- **Phase 4 (Future):** Multi-campus expansion + polish.  
+- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
+- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
+- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
