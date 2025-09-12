@@ -1,36 +1,125 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Product Requirements Document
 
-## Getting Started
+## Product: CampusGuessr  
+**Team:** Collaborative Coding Club @ CWRU  
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+# Phase 1: MVP (Single-Player)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Objective
+Deliver a single-player, anonymous-playable campus guessing game with 360° images. Focus on the core game loop with minimum dependencies.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+#### Game Flow
+- 5 rounds per game (configurable later).  
+- Each round: show a 360° campus image → player drops a pin on the campus map → time-limited guess (default 30s–60s).  
+- After guess: reveal actual location, draw line, show distance + per-round score.  
+- After 5 rounds: total score summary.  
 
-## Learn More
+#### Scoring
+- Distance-based scoring (GeoGuessr-style curve).  
+- Tightened scale for campus (max distance ≈ 1–2 km).  
+- Score range per round: 0–5000 points.  
 
-To learn more about Next.js, take a look at the following resources:
+#### Content
+- Seed with ~50 campus 360° images (from existing resources).  
+- Store image URLs in Supabase Storage; metadata (lat, lng, image id) in Postgres.  
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+#### Platform
+- Web only (Next.js, React, Tailwind).  
+- Anonymous play (no login).  
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+#### Deployment
+- Hosting on Vercel + Supabase free tier.  
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Phase 2: Competitive & Social
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Objective
+Introduce social play and personalization. Let students compete, track scores, and create custom games.
+
+### Features
+
+#### Authentication
+- Supabase Auth with nicknames or email-based login.  
+- Upgrade path to Case SSO if possible.  
+
+#### Leaderboards
+- Global leaderboard (top scores).  
+- Time-based leaderboards (daily/weekly).  
+
+#### Multiplayer
+- Party leader sets rounds/time limit.  
+- Players join via link.  
+- Synchronous rounds: all players guess the same image per round.  
+- Lobby chat (optional).  
+- Session leaderboard after the game ends.  
+
+#### Custom Games (Basic)
+- Upload static photos with location tagging.  
+- Private links for sharing with friends (no moderation).  
+
+#### Game Customization
+- Party leader can adjust:  
+  - Number of rounds.  
+  - Round timer.  
+
+#### Engagement
+- Share game invites and results via link.  
+
+---
+
+# Phase 3: Community Expansion
+
+### Objective
+Enable community-driven content and larger-scale events. Build features that let the game grow beyond the club.
+
+### Features
+
+#### Custom Game Builder
+- Full UI for uploading images, tagging on map, setting difficulty.  
+- Game code/link generation.  
+
+#### Content Moderation
+- Admin dashboard for reviewing and approving community uploads.  
+- Flag/report functionality.  
+
+#### Analytics
+- Track active players, most-played locations, average score per round.  
+- Export or dashboard for club organizers.  
+
+#### Mobile-First Polish
+- Optimize gestures for touch (drag pin, zoom).  
+- Add PWA (installable app feel).  
+
+#### Visual Polish
+- Better transitions/animations.  
+- Support for multiple map styles.  
+
+---
+
+# Phase 4: Future / Stretch Goals
+
+### Objective
+Go beyond campus, make the platform adaptable to other contexts.
+
+### Features
+- Multi-campus support (Case + other universities).  
+- Public publishing of custom games.  
+- Advanced moderation (AI face/license plate blurring).  
+- 360° photo uploads via phone/cheap 360 cameras.  
+- Gamification (achievements, ranks, streaks).  
+- Monetization/hosting sponsorships if needed.  
+- Create iOS/Android app.  
+
+---
+
+# Roadmap Timeline (Suggested)
+
+- **Phase 1 (MVP, ~5 weeks):** Single-player, 5 rounds, campus dataset.  
+- **Phase 2 (Weeks 6–12):** Leaderboards, multiplayer, basic custom uploads.  
+- **Phase 3 (Following Semester):** Community builder, tournaments, moderation, analytics.  
+- **Phase 4 (Future):** Multi-campus expansion + polish.  
