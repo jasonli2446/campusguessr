@@ -36,7 +36,7 @@ const MapEventsComponent = dynamic(() =>
 
     return function MapEventHandler({ onPinDrop }: { onPinDrop: (coordinates: { lat: number; lng: number }) => void }) {
       useMapEvents({
-        click: (e: any) => {
+        click: (e: { latlng: { lat: number; lng: number } }) => {
           const { lat, lng } = e.latlng;
           console.log('Pin dropped at coordinates:', { lat, lng });
           onPinDrop({ lat, lng });
@@ -60,7 +60,7 @@ export default function CampusMap({ onPinDrop, className = '' }: CampusMapProps)
       setL(leaflet.default);
 
       // Fix for default markers in Next.js
-      delete (leaflet.default.Icon.Default.prototype as any)._getIconUrl;
+      delete (leaflet.default.Icon.Default.prototype as Record<string, unknown>)._getIconUrl;
       leaflet.default.Icon.Default.mergeOptions({
         iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
         iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
