@@ -59,12 +59,13 @@ export default function CampusMap({ onPinDrop, className = '' }: CampusMapProps)
     import('leaflet').then((leaflet) => {
       setL(leaflet.default);
 
-      // Fix for default markers in Next.js
-      delete (leaflet.default.Icon.Default.prototype as Record<string, unknown>)._getIconUrl;
+      if ('_getIconUrl' in leaflet.default.Icon.Default.prototype) {
+        delete leaflet.default.Icon.Default.prototype._getIconUrl;
+      }
       leaflet.default.Icon.Default.mergeOptions({
-        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
       });
     });
   }, []);
