@@ -16,7 +16,7 @@ export default function PhotoSphereViewer({
   width = "100%",
   className = "w-full h-screen"
 }: PhotoSphereViewerProps) {
-  const photoSphereRef = React.createRef<any>();
+  const photoSphereRef = React.createRef<React.ComponentRef<typeof ReactPhotoSphereViewer>>();
 
 
   return (
