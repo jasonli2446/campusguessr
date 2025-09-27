@@ -1,4 +1,4 @@
-import PhotoSphereViewer from "@/components/photo-sphere-viewer";
+import PhotoSphereViewer from "@/components/gameplay/photo-sphere-viewer";
 
 export default function PlayPage() {
   const supabaseImageUrl = "https://wwewcdgukzswaejezywc.supabase.co/storage/v1/object/public/images/test_panorama.jpg";
