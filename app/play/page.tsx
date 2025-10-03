@@ -1,7 +1,15 @@
 import PhotoSphereViewer from "@/components/gameplay/photo-sphere-viewer";
 import CampusMap from "@/components/gameplay/CampusMap";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 
-export default function PlayPage() {
+export default async function ProtectedPlayPage() {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.auth.getClaims();
+  if (error || !data?.claims) {
+    redirect("/auth/login");
+  }
   const supabaseImageUrl = "https://wwewcdgukzswaejezywc.supabase.co/storage/v1/object/public/images/test_panorama.jpg";
 
   return (
