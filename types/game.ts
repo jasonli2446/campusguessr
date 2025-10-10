@@ -18,8 +18,7 @@ export interface Guess {
 }
 
 export interface GameSession {
-  id: string; // UUID
-  session_token: string;
+  id: string; // UUID - this is the game_id in the URL
   current_round: number; // 0-5
   total_score: number;
   location_ids: string[]; // Array of 5 UUIDs
@@ -36,18 +35,14 @@ export interface Coordinates {
 
 // API Request/Response types
 
-export interface StartGameRequest {
-  session_token: string;
-}
 
 export interface StartGameResponse {
-  session_id: string;
-  location_ids: string[];
+  game_id: string;
   first_location: Location;
 }
 
 export interface SubmitGuessRequest {
-  session_id: string;
+  game_id: string;
   round: number;
   latitude: number;
   longitude: number;
@@ -59,10 +54,6 @@ export interface SubmitGuessResponse {
   next_location?: Location; // undefined if game is over
   game_completed: boolean;
   total_score: number;
-}
-
-export interface GetGameResultsRequest {
-  session_id: string;
 }
 
 export interface GetGameResultsResponse {

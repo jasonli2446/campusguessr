@@ -11,6 +11,15 @@ export default {
   theme: {
     extend: {
       colors: {
+        // CWRU Brand Colors
+        cwru: {
+          blue: "#003071", // Primary CWRU Blue
+          "true-blue": "#007AB8", // Brighter accent blue
+          "light-blue": "#A6D2E6", // Light accent
+          "dark-blue": "#09143A", // Dark accent
+          gray: "#999999",
+          "light-gray": "#D3D3D3",
+        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
