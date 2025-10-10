@@ -1,6 +1,7 @@
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { LandingHero } from "@/components/landing-hero";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Home() {
   return (
@@ -9,8 +10,17 @@ export default function Home() {
       <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
         <div className="w-full max-w-6xl flex justify-between items-center p-3 px-5 text-sm">
           <div className="flex gap-5 items-center font-semibold">
-            <Link href={"/"} className="text-xl font-bold text-blue-600 dark:text-blue-400">
-              CampusGuessr
+            <Link href={"/"} className="flex items-center gap-2">
+              <Image
+                src="/logo.png"
+                alt="CampusGuessr Logo"
+                width={32}
+                height={32}
+                className="rounded"
+              />
+              <span className="text-xl font-bold text-cwru-blue dark:text-cwru-true-blue">
+                CampusGuessr
+              </span>
             </Link>
           </div>
           <div className="flex items-center gap-4">
