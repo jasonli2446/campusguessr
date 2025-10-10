@@ -17,12 +17,15 @@ const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), {
 
 
 import 'leaflet/dist/leaflet.css';
+import { CWRU_CENTER, CWRU_BOUNDS } from '@/lib/coordinate-utils';
 
-// CWRU campus coordinates
-const CWRU_CENTER: [number, number] = [41.5045, -81.6087];
+// Map configuration
 const DEFAULT_ZOOM = 16;
 const MIN_ZOOM = 14; // Prevent zooming too far out
 const MAX_ZOOM = 18; // Prevent zooming too far in
+
+// Convert CWRU_CENTER to leaflet tuple format
+const CENTER_TUPLE: [number, number] = [CWRU_CENTER.lat, CWRU_CENTER.lng];
 
 interface CampusMapProps {
   onPinDrop?: (coordinates: { lat: number; lng: number }) => void;
@@ -86,10 +89,15 @@ export default function CampusMap({ onPinDrop, className = '' }: CampusMapProps)
   return (
     <div className={`relative ${className}`}>
       <MapContainer
-        center={CWRU_CENTER}
+        center={CENTER_TUPLE}
         zoom={DEFAULT_ZOOM}
         minZoom={MIN_ZOOM}
         maxZoom={MAX_ZOOM}
+        maxBounds={[
+          [CWRU_BOUNDS.south, CWRU_BOUNDS.west],
+          [CWRU_BOUNDS.north, CWRU_BOUNDS.east]
+        ]}
+        maxBoundsViscosity={0.5}
         style={{ height: '100%', width: '100%' }}
         className="rounded-lg border-2 border-gray-300"
       >
