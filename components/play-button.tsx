@@ -9,10 +9,10 @@ export function PlayButton() {
   const handlePlay = () => {
     // Generate a unique session ID
     const sessionId = crypto.randomUUID();
-    // For now, just show an alert since we're not implementing game sessions yet
+    // Temporary alert since sessions not implemented yet
     alert(`Session ID generated: ${sessionId}\n\nGame sessions coming soon!`);
-    // TODO: Uncomment when game sessions are implemented
-    // router.push(`/game/${sessionId}`);
+    // Push to game session
+    router.push(`/game/${sessionId}`);
   };
 
   return (
