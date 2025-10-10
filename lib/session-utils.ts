@@ -37,7 +37,7 @@ export function getOrCreateSessionToken(): string {
     }
 
     return token;
-  } catch (error) {
+  } catch {
     // If localStorage is not available (privacy mode, etc.), generate a new token
     console.warn('localStorage not available, generating temporary session token');
     return generateSessionToken();
@@ -55,7 +55,7 @@ export function clearSessionToken(): void {
 
   try {
     localStorage.removeItem(SESSION_TOKEN_KEY);
-  } catch (error) {
+  } catch {
     console.warn('Could not clear session token from localStorage');
   }
 }
@@ -71,7 +71,7 @@ export function getSessionToken(): string | null {
 
   try {
     return localStorage.getItem(SESSION_TOKEN_KEY);
-  } catch (error) {
+  } catch {
     return null;
   }
 }

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { CheckCircle, AlertCircle } from 'lucide-react';
 import ImageUploadZone from '@/components/upload/ImageUploadZone';
 import CampusMap from '@/components/gameplay/CampusMap';
 
@@ -15,6 +16,12 @@ export default function UploadForm({ userId }: UploadFormProps) {
   const [imageBase64, setImageBase64] = useState<string>('');
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  const showNotification = (type: 'success' | 'error', message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   const handleImageSelect = (base64: string) => {
     setImageBase64(base64);
@@ -26,12 +33,12 @@ export default function UploadForm({ userId }: UploadFormProps) {
 
   const handleSubmit = async () => {
     if (!imageBase64) {
-      alert('Please select an image');
+      showNotification('error', 'Please select an image');
       return;
     }
 
     if (!coordinates) {
-      alert('Please select a location on the map');
+      showNotification('error', 'Please select a location on the map');
       return;
     }
 
@@ -55,14 +62,14 @@ export default function UploadForm({ userId }: UploadFormProps) {
         throw new Error('Upload failed');
       }
 
-      alert('Image uploaded successfully!');
+      showNotification('success', 'Image uploaded successfully!');
 
       // Reset form
       setImageBase64('');
       setCoordinates(null);
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Failed to upload image. Please try again.');
+      showNotification('error', 'Failed to upload image. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -121,6 +128,26 @@ export default function UploadForm({ userId }: UploadFormProps) {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Notification */}
+      {notification && (
+        <div className={`
+          fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg
+          transform transition-all duration-300 ease-in-out
+          animate-in slide-in-from-right-full fade-in
+          ${notification.type === 'success' 
+            ? 'bg-green-500 text-white' 
+            : 'bg-red-500 text-white'
+          }
+        `}>
+          {notification.type === 'success' ? (
+            <CheckCircle className="h-5 w-5" />
+          ) : (
+            <AlertCircle className="h-5 w-5" />
+          )}
+          <span className="font-medium">{notification.message}</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface ImageUploadZoneProps {
   onImageSelect: (base64: string) => void;
@@ -13,7 +14,13 @@ interface ImageUploadZoneProps {
 export default function ImageUploadZone({ onImageSelect, className = '' }: ImageUploadZoneProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const showNotification = (type: 'success' | 'error', message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   const convertToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -26,7 +33,7 @@ export default function ImageUploadZone({ onImageSelect, className = '' }: Image
 
   const handleFileSelect = async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      showNotification('error', 'Please select an image file');
       return;
     }
 
@@ -36,7 +43,7 @@ export default function ImageUploadZone({ onImageSelect, className = '' }: Image
       onImageSelect(base64);
     } catch (error) {
       console.error('Error converting image to base64:', error);
-      alert('Failed to process image');
+      showNotification('error', 'Failed to process image');
     }
   };
 
@@ -106,9 +113,11 @@ export default function ImageUploadZone({ onImageSelect, className = '' }: Image
           </div>
         ) : (
           <div className="relative">
-            <img
+            <Image
               src={preview}
               alt="Preview"
+              width={400}
+              height={256}
               className="w-full h-64 object-cover rounded-lg"
             />
             <Button
@@ -119,6 +128,26 @@ export default function ImageUploadZone({ onImageSelect, className = '' }: Image
             >
               <X className="h-4 w-4" />
             </Button>
+          </div>
+        )}
+        
+        {/* Notification */}
+        {notification && (
+          <div className={`
+            fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg
+            transform transition-all duration-300 ease-in-out
+            animate-in slide-in-from-right-full fade-in
+            ${notification.type === 'success' 
+              ? 'bg-green-500 text-white' 
+              : 'bg-red-500 text-white'
+            }
+          `}>
+            {notification.type === 'success' ? (
+              <CheckCircle className="h-5 w-5" />
+            ) : (
+              <AlertCircle className="h-5 w-5" />
+            )}
+            <span className="font-medium">{notification.message}</span>
           </div>
         )}
       </CardContent>
