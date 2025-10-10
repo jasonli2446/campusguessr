@@ -35,6 +35,7 @@ export interface Coordinates {
 
 // API Request/Response types
 
+
 export interface StartGameResponse {
   game_id: string;
   first_location: Location;
