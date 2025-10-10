@@ -9,13 +9,10 @@ export function LandingHero() {
           <span className="text-blue-600 dark:text-blue-400">CampusGuessr</span>
         </h1>
         <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-          Test your knowledge of Case Western Reserve University
+          Explore CWRU Campus in 360°
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <PlayButton />
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            No account required • Free to play
-          </p>
         </div>
       </div>
     </section>
