@@ -1,7 +1,7 @@
-import { DeployButton } from "@/components/deploy-button";
-import { EnvVarWarning } from "@/components/env-var-warning";
-import { AuthButton } from "@/components/auth-button";
-import { ThemeSwitcher } from "@/components/theme-switcher";
+import { DeployButton } from "@/app/components/deploy-button";
+import { EnvVarWarning } from "@/app/components/env-var-warning";
+import { AuthButton } from "@/app/components/auth-button";
+import { ThemeSwitcher } from "@/app/components/theme-switcher";
 import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
 
