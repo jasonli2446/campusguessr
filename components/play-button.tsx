@@ -19,7 +19,7 @@ export function PlayButton() {
     <Button 
       onClick={handlePlay}
       size="lg"
-      className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+      className="bg-blue-600 hover:bg-blue-700 text-white px-16 py-8 text-xl font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
     >
       🎮 Play CampusGuessr
     </Button>
