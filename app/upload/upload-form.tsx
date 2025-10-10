@@ -122,7 +122,7 @@ export default function UploadForm({ userId }: UploadFormProps) {
       {/* Right column: Map */}
       <div>
         <Label className="text-lg font-semibold mb-2 block">2. Select Location</Label>
-        <Card className="h-[600px]">
+        <Card className="h-[450px]">
           <CardContent className="p-4 h-full">
             <CampusMap onPinDrop={handlePinDrop} className="h-full" />
           </CardContent>
