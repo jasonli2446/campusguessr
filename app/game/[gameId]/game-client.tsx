@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { PhotoSphereViewer } from "@/components/gameplay/photo-sphere-viewer";
+import PhotoSphereViewer from "@/components/gameplay/photo-sphere-viewer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { formatRound, formatScore } from "@/lib/format-utils";
