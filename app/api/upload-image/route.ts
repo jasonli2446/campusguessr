@@ -2,6 +2,19 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
+// Configure API route to accept larger payloads (50MB)
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '50mb',
+    },
+  },
+};
+
+// Runtime configuration for route
+export const runtime = 'nodejs';
+export const maxDuration = 60; // 60 seconds timeout
+
 export async function POST(request: NextRequest) {
   try {
     // Parse FormData instead of JSON
@@ -57,11 +70,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Security: Check file size (limit to 10MB)
-    if (file.size > 10 * 1024 * 1024) {
+    // Security: Check file size (limit to 4.5MB for Vercel)
+    // Vercel Hobby plan has 4.5MB body size limit
+    if (file.size > 4.5 * 1024 * 1024) {
       return NextResponse.json(
-        { error: "File too large. Maximum size is 10MB" },
-        { status: 400 }
+        { error: "File too large. Maximum size is 4.5MB. Please compress your image." },
+        { status: 413 }
       );
     }
 

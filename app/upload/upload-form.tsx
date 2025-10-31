@@ -58,8 +58,21 @@ export default function UploadForm({ userId }: UploadFormProps) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload failed');
+        let errorMessage = 'Upload failed';
+
+        // Handle 413 specifically
+        if (response.status === 413) {
+          errorMessage = 'File too large. Try compressing the image or use a smaller file.';
+        } else {
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch {
+            errorMessage = `Upload failed (${response.status})`;
+          }
+        }
+
+        throw new Error(errorMessage);
       }
 
       showNotification('success', 'Image uploaded successfully!');

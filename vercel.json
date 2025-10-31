@@ -1,0 +1,14 @@
+{
+  "functions": {
+    "app/api/upload-image/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    }
+  ]
+}
