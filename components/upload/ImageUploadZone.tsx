@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Upload, X, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface ImageUploadZoneProps {
-  onImageSelect: (base64: string) => void;
+  onImageSelect: (file: File | null) => void;
   className?: string;
 }
 
@@ -22,27 +22,23 @@ export default function ImageUploadZone({ onImageSelect, className = '' }: Image
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const convertToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   const handleFileSelect = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       showNotification('error', 'Please select an image file');
       return;
     }
 
+    // Check file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      showNotification('error', 'File size must be less than 10MB');
+      return;
+    }
+
     try {
-      const base64 = await convertToBase64(file);
       setPreview(URL.createObjectURL(file));
-      onImageSelect(base64);
+      onImageSelect(file);
     } catch (error) {
-      console.error('Error converting image to base64:', error);
+      console.error('Error processing image:', error);
       showNotification('error', 'Failed to process image');
     }
   };
@@ -74,8 +70,11 @@ export default function ImageUploadZone({ onImageSelect, className = '' }: Image
   };
 
   const handleClear = () => {
+    if (preview) {
+      URL.revokeObjectURL(preview);
+    }
     setPreview(null);
-    onImageSelect('');
+    onImageSelect(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }

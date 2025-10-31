@@ -4,35 +4,35 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { image, latitude, longitude, username } = body;
+    // Parse FormData instead of JSON
+    const formData = await request.formData();
+    const file = formData.get("file") as File | null;
+    const latitude = formData.get("latitude");
+    const longitude = formData.get("longitude");
+    const username = formData.get("username");
 
     // Validate required fields
-    if (!image || latitude === undefined || longitude === undefined || !username) {
+    if (!file || latitude === null || longitude === null || !username) {
       return NextResponse.json(
-        { error: "Missing required fields: image, latitude, longitude, username" },
+        { error: "Missing required fields: file, latitude, longitude, username" },
         { status: 400 }
       );
     }
 
     // Validate data types
-    if (typeof image !== "string") {
+    if (!(file instanceof File)) {
       return NextResponse.json(
-        { error: "image must be a string" },
+        { error: "file must be a File object" },
         { status: 400 }
       );
     }
 
-    if (typeof latitude !== "number" || typeof longitude !== "number") {
-      return NextResponse.json(
-        { error: "latitude and longitude must be numbers" },
-        { status: 400 }
-      );
-    }
+    const lat = parseFloat(latitude as string);
+    const lng = parseFloat(longitude as string);
 
-    if (typeof username !== "string") {
+    if (isNaN(lat) || isNaN(lng)) {
       return NextResponse.json(
-        { error: "username must be a string" },
+        { error: "latitude and longitude must be valid numbers" },
         { status: 400 }
       );
     }
@@ -57,25 +57,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Decode the base64 image
-    // Remove the data:image/...;base64, prefix if present
-    const base64Data = image.includes(',') ? image.split(',')[1] : image;
-    const imageBuffer = Buffer.from(base64Data, 'base64');
-
     // Security: Check file size (limit to 10MB)
-    if (imageBuffer.length > 10 * 1024 * 1024) {
+    if (file.size > 10 * 1024 * 1024) {
       return NextResponse.json(
         { error: "File too large. Maximum size is 10MB" },
         { status: 400 }
       );
     }
 
-    // Extract file extension from base64 string (if present)
-    let fileExtension = 'jpg'; // default
-    if (image.startsWith('data:image/')) {
-      const mimeType = image.substring(11, image.indexOf(';'));
-      fileExtension = mimeType === 'jpeg' ? 'jpg' : mimeType;
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      return NextResponse.json(
+        { error: "File must be an image" },
+        { status: 400 }
+      );
     }
+
+    // Extract file extension from filename or mime type
+    let fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    if (!['jpg', 'jpeg', 'png', 'webp'].includes(fileExtension)) {
+      fileExtension = file.type.split('/')[1] || 'jpg';
+    }
+
+    // Convert File to Buffer
+    const arrayBuffer = await file.arrayBuffer();
+    const imageBuffer = Buffer.from(arrayBuffer);
 
     // Generate secure filename (remove username to avoid exposure)
     const timestamp = Date.now();
@@ -114,8 +120,8 @@ export async function POST(request: NextRequest) {
       .from('locations')
       .insert({
         image_url: publicUrl,
-        latitude,
-        longitude,
+        latitude: lat,
+        longitude: lng,
         created_by: user.id
       })
       .select()
@@ -137,8 +143,8 @@ export async function POST(request: NextRequest) {
         data: {
           imageUrl: publicUrl,
           fileName: fileName,
-          latitude,
-          longitude,
+          latitude: lat,
+          longitude: lng,
           username,
           locationId: locationData.id
         }

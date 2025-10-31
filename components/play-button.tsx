@@ -8,21 +8,19 @@ export function PlayButton() {
 
   const handlePlay = async () => {
     try {
-      // TODO: Backend /api/game/start endpoint needs to be implemented
-      // Expected response: { game_id: "uuid" }
-
-      // Temporary: Generate UUID on client until backend is ready
-      const gameId = crypto.randomUUID();
-      console.log('Starting game with ID:', gameId);
-
-      /* When backend is ready, replace above with:
+      // Call backend to initialize game session with random locations
       const response = await fetch('/api/game/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
-      const { game_id } = await response.json();
-      router.push(`/game/${game_id}`);
-      */
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to start game');
+      }
+
+      const { gameId } = await response.json();
+      console.log('Starting game with ID:', gameId);
 
       router.push(`/game/${gameId}`);
     } catch (error) {

@@ -28,7 +28,8 @@ const MAX_ZOOM = 18; // Prevent zooming too far in
 const CENTER_TUPLE: [number, number] = [CWRU_CENTER.lat, CWRU_CENTER.lng];
 
 interface CampusMapProps {
-  onPinDrop?: (coordinates: { lat: number; lng: number }) => void;
+  onPinDrop?: (lat: number, lng: number) => void;
+  selectedLocation?: { lat: number; lng: number } | null;
   className?: string;
 }
 
@@ -37,12 +38,12 @@ const MapEventsComponent = dynamic(() =>
   import('react-leaflet').then((mod) => {
     const { useMapEvents } = mod;
 
-    return function MapEventHandler({ onPinDrop }: { onPinDrop: (coordinates: { lat: number; lng: number }) => void }) {
+    return function MapEventHandler({ onPinDrop }: { onPinDrop: (lat: number, lng: number) => void }) {
       useMapEvents({
         click: (e: { latlng: { lat: number; lng: number } }) => {
           const { lat, lng } = e.latlng;
           console.log('Pin dropped at coordinates:', { lat, lng });
-          onPinDrop({ lat, lng });
+          onPinDrop(lat, lng);
         },
       });
       return null;
@@ -51,7 +52,7 @@ const MapEventsComponent = dynamic(() =>
   { ssr: false }
 );
 
-export default function CampusMap({ onPinDrop, className = '' }: CampusMapProps) {
+export function CampusMap({ onPinDrop, selectedLocation, className = '' }: CampusMapProps) {
   const [mounted, setMounted] = useState(false);
   const [pinPosition, setPinPosition] = useState<[number, number] | null>(null);
   const [L, setL] = useState<typeof import('leaflet') | null>(null);
@@ -73,9 +74,16 @@ export default function CampusMap({ onPinDrop, className = '' }: CampusMapProps)
     });
   }, []);
 
-  const handlePinDrop = (coordinates: { lat: number; lng: number }) => {
-    setPinPosition([coordinates.lat, coordinates.lng]);
-    onPinDrop?.(coordinates);
+  // Update pin position when selectedLocation changes
+  useEffect(() => {
+    if (selectedLocation) {
+      setPinPosition([selectedLocation.lat, selectedLocation.lng]);
+    }
+  }, [selectedLocation]);
+
+  const handlePinDrop = (lat: number, lng: number) => {
+    setPinPosition([lat, lng]);
+    onPinDrop?.(lat, lng);
   };
 
   if (!mounted || !L) {
@@ -116,3 +124,6 @@ export default function CampusMap({ onPinDrop, className = '' }: CampusMapProps)
     </div>
   );
 }
+
+// Also export as default for backward compatibility
+export default CampusMap;

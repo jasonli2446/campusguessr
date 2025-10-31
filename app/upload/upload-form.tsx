@@ -13,7 +13,7 @@ interface UploadFormProps {
 }
 
 export default function UploadForm({ userId }: UploadFormProps) {
-  const [imageBase64, setImageBase64] = useState<string>('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -23,16 +23,16 @@ export default function UploadForm({ userId }: UploadFormProps) {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const handleImageSelect = (base64: string) => {
-    setImageBase64(base64);
+  const handleImageSelect = (file: File | null) => {
+    setSelectedFile(file);
   };
 
-  const handlePinDrop = (coords: { lat: number; lng: number }) => {
-    setCoordinates(coords);
+  const handlePinDrop = (lat: number, lng: number) => {
+    setCoordinates({ lat, lng });
   };
 
   const handleSubmit = async () => {
-    if (!imageBase64) {
+    if (!selectedFile) {
       showNotification('error', 'Please select an image');
       return;
     }
@@ -45,37 +45,37 @@ export default function UploadForm({ userId }: UploadFormProps) {
     setIsSubmitting(true);
 
     try {
+      // Create FormData to send file
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('latitude', coordinates.lat.toString());
+      formData.append('longitude', coordinates.lng.toString());
+      formData.append('username', userId);
+
       const response = await fetch('/api/upload-image', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          image: imageBase64,
-          latitude: coordinates.lat,
-          longitude: coordinates.lng,
-          username: userId,
-        }),
+        body: formData,
       });
 
       if (!response.ok) {
-        throw new Error('Upload failed');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Upload failed');
       }
 
       showNotification('success', 'Image uploaded successfully!');
 
       // Reset form
-      setImageBase64('');
+      setSelectedFile(null);
       setCoordinates(null);
     } catch (error) {
       console.error('Upload error:', error);
-      showNotification('error', 'Failed to upload image. Please try again.');
+      showNotification('error', error instanceof Error ? error.message : 'Failed to upload image. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const canSubmit = imageBase64 && coordinates && !isSubmitting;
+  const canSubmit = selectedFile && coordinates && !isSubmitting;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
