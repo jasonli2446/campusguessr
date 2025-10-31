@@ -43,7 +43,7 @@ export default async function ResultsPage({ params }: PageProps) {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2">Game Complete!</h1>
           <p className="text-muted-foreground">
-            Here's how you did on your CampusGuessr adventure
+            Here&apos;s how you did on your CampusGuessr adventure
           </p>
         </div>
 
@@ -68,7 +68,15 @@ export default async function ResultsPage({ params }: PageProps) {
         {/* Round-by-Round Breakdown */}
         <div className="space-y-4 mb-8">
           <h2 className="text-2xl font-semibold mb-4">Round Breakdown</h2>
-          {gameSession.guesses.map((guess: any, index: number) => (
+          {gameSession.guesses.map((guess: {
+            round: number;
+            guessLatitude: number;
+            guessLongitude: number;
+            actualLatitude: number;
+            actualLongitude: number;
+            distance: number;
+            score: number;
+          }, index: number) => (
             <Card key={index}>
               <CardHeader>
                 <CardTitle className="flex justify-between items-center">

@@ -22,12 +22,24 @@ interface Location {
   created_at: string;
 }
 
+interface Guess {
+  round: number;
+  locationId: string;
+  guessLatitude: number;
+  guessLongitude: number;
+  actualLatitude: number;
+  actualLongitude: number;
+  distance: number;
+  score: number;
+  timestamp: string;
+}
+
 interface GameSession {
   id: string;
   current_round: number;
   total_score: number;
   location_ids: string[];
-  guesses: any[];
+  guesses: Guess[];
   created_at: string;
 }
 
