@@ -50,7 +50,8 @@ export async function updateSession(request: NextRequest) {
   // Define public routes that don't require authentication
   const publicRoutes = [
     "/",
-    "/play",
+    "/game",
+    "/api/game",
     "/auth",
     "/login"
   ];

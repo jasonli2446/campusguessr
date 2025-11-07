@@ -30,10 +30,6 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files
-.env.local
-.env
-*.env
 
 # vercel
 .vercel
@@ -43,3 +39,8 @@ yarn-error.log*
 next-env.d.ts
 
 CLAUDE.MD
+
+# env files
+.env.local
+.env
+*.env

@@ -71,16 +71,28 @@ export function formatRound(current: number, total: number = 5): string {
 }
 
 /**
+ * Get maximum possible score for a game
+ * @param rounds Number of rounds (default: 5)
+ * @returns Maximum score (5000 points per round)
+ */
+export function getMaxScore(rounds: number = 5): number {
+  return rounds * 5000;
+}
+
+/**
  * Get score quality label based on score
- * @param score Score value (0-5000)
+ * @param score Score value
+ * @param maxScore Maximum possible score (default: 25000 for 5 rounds)
  * @returns Quality label
  */
-export function getScoreQuality(score: number): string {
-  if (score >= 4500) return 'Perfect!';
-  if (score >= 4000) return 'Excellent!';
-  if (score >= 3000) return 'Great!';
-  if (score >= 2000) return 'Good!';
-  if (score >= 1000) return 'Not bad!';
+export function getScoreQuality(score: number, maxScore: number = 25000): string {
+  const percentage = (score / maxScore) * 100;
+
+  if (percentage >= 90) return 'Perfect!';
+  if (percentage >= 80) return 'Excellent!';
+  if (percentage >= 60) return 'Great!';
+  if (percentage >= 40) return 'Good!';
+  if (percentage >= 20) return 'Not bad!';
   return 'Keep trying!';
 }
 
