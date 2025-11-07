@@ -29,9 +29,9 @@ export default function ImageUploadZone({ onImageSelect, className = '' }: Image
     }
 
     // Check file size (4.5MB limit for Vercel)
-    // Vercel has a 4.5MB limit on Hobby plan
-    if (file.size > 4.5 * 1024 * 1024) {
-      showNotification('error', 'File size must be less than 4.5MB. Please compress your image.');
+    // Vercel has a 8MB limit on Hobby plan
+    if (file.size > 8 * 1024 * 1024) {
+      showNotification('error', 'File size must be less than 8MB. Please compress your image.');
       return;
     }
 

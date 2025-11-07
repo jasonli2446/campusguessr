@@ -70,8 +70,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Security: Check file size (limit to 4.5MB for Vercel)
-    // Vercel Hobby plan has 4.5MB body size limit
+    // Vercel Hobby plan has 8MB body size limit
     if (file.size > 8 * 1024 * 1024) {
       return NextResponse.json(
         { error: "File too large. Maximum size is 8MB. Please compress your image." },
