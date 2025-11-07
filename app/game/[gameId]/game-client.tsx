@@ -7,7 +7,6 @@ import CampusMap from "@/components/gameplay/CampusMap";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { formatScore, formatDistance, getScoreQuality, getDistanceQuality } from "@/lib/format-utils";
-import { formatScore, formatDistance, getScoreQuality, getDistanceQuality } from "@/lib/format-utils";
 
 interface Location {
   id: string;
@@ -50,13 +49,6 @@ interface RoundResult {
   gameComplete: boolean;
 }
 
-interface RoundResult {
-  distance: number;
-  score: number;
-  totalScore: number;
-  gameComplete: boolean;
-}
-
 export default function GameClient({
   gameSession,
   currentLocation,
@@ -66,9 +58,6 @@ export default function GameClient({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [mapResizeTrigger, setMapResizeTrigger] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(60);
-  const [showResult, setShowResult] = useState(false);
-  const [roundResult, setRoundResult] = useState<RoundResult | null>(null);
   const [timeLeft, setTimeLeft] = useState(60);
   const [showResult, setShowResult] = useState(false);
   const [roundResult, setRoundResult] = useState<RoundResult | null>(null);
@@ -83,7 +72,6 @@ export default function GameClient({
   // Timer countdown
   useEffect(() => {
     if (timeLeft <= 0 || isSubmitting || showResult) return;
-    if (timeLeft <= 0 || isSubmitting || showResult) return;
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -97,7 +85,6 @@ export default function GameClient({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, isSubmitting, showResult]);
   }, [timeLeft, isSubmitting, showResult]);
 
   const handlePinDrop = (lat: number, lng: number) => {
@@ -128,8 +115,6 @@ export default function GameClient({
       }
 
       const result = await response.json();
-      setRoundResult(result);
-      setShowResult(true);
       setRoundResult(result);
       setShowResult(true);
 
@@ -211,7 +196,6 @@ export default function GameClient({
             <Button
               onClick={handleGuess}
               disabled={!guessedLocation || isSubmitting || showResult}
-              disabled={!guessedLocation || isSubmitting || showResult}
               size="lg"
               className="bg-cwru-blue hover:bg-cwru-dark-blue text-white px-8 py-6 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -245,85 +229,17 @@ export default function GameClient({
 
         {/* Map instruction overlay */}
         {!guessedLocation && !showResult && (
-        {!guessedLocation && !showResult && (
           <div className="absolute top-2 left-2 right-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm px-3 py-2 rounded text-xs text-center font-medium text-gray-700 dark:text-gray-300 pointer-events-none">
             Click on the map to drop your guess pin
           </div>
         )}
 
         {guessedLocation && !isSubmitting && !showResult && (
-        {guessedLocation && !isSubmitting && !showResult && (
           <div className="absolute top-2 left-2 right-2 bg-green-500/90 backdrop-blur-sm px-3 py-2 rounded text-xs text-center font-medium text-white pointer-events-none">
             Pin dropped! Click &quot;Make Guess&quot; to submit
           </div>
         )}
       </div>
-
-      {/* Results Overlay */}
-      {showResult && roundResult && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <Card className="bg-white dark:bg-gray-900 p-8 max-w-lg w-full mx-4 border-4 border-cwru-blue shadow-2xl">
-            <div className="text-center space-y-6">
-              {/* Round Complete Header */}
-              <div>
-                <h2 className="text-3xl font-bold text-cwru-blue dark:text-cwru-light-blue mb-2">
-                  Round {gameSession.current_round} Complete!
-                </h2>
-              </div>
-
-              {/* Distance */}
-              <div className="space-y-2">
-                <div className="text-sm text-gray-500 dark:text-gray-400 uppercase font-medium">
-                  Distance
-                </div>
-                <div className="text-4xl font-bold text-gray-900 dark:text-gray-100">
-                  {formatDistance(roundResult.distance)}
-                </div>
-                <div className="text-lg text-green-600 dark:text-green-400 font-semibold">
-                  {getDistanceQuality(roundResult.distance)}
-                </div>
-              </div>
-
-              {/* Score */}
-              <div className="space-y-2">
-                <div className="text-sm text-gray-500 dark:text-gray-400 uppercase font-medium">
-                  Points Earned
-                </div>
-                <div className="text-5xl font-bold text-green-600 dark:text-green-400">
-                  +{formatScore(roundResult.score)}
-                </div>
-                <div className="text-lg text-cwru-blue dark:text-cwru-light-blue font-semibold">
-                  {getScoreQuality(roundResult.score, 5000)}
-                </div>
-              </div>
-
-              {/* Total Score */}
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                <div className="text-sm text-gray-500 dark:text-gray-400 uppercase font-medium mb-1">
-                  Total Score
-                </div>
-                <div className="text-3xl font-bold text-cwru-blue dark:text-cwru-light-blue">
-                  {formatScore(roundResult.totalScore)}
-                </div>
-              </div>
-
-              {/* Next Button */}
-              <div className="pt-4">
-                <Button
-                  onClick={handleNextRound}
-                  size="lg"
-                  className="w-full bg-cwru-blue hover:bg-cwru-dark-blue text-white text-lg font-semibold py-6"
-                >
-                  {roundResult.gameComplete ? 'View Final Results' : 'Next Round'}
-                </Button>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  Auto-advancing in a few seconds...
-                </p>
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
 
       {/* Results Overlay */}
       {showResult && roundResult && (
