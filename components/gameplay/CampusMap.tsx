@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), {
@@ -14,7 +14,6 @@ const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLaye
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), {
   ssr: false,
 });
-
 
 import 'leaflet/dist/leaflet.css';
 import { CWRU_CENTER, CWRU_BOUNDS } from '@/lib/coordinate-utils';
@@ -31,28 +30,52 @@ interface CampusMapProps {
   onPinDrop?: (lat: number, lng: number) => void;
   selectedLocation?: { lat: number; lng: number } | null;
   className?: string;
+  triggerResize?: number; // Change this value to trigger map resize
 }
 
-// Create a dynamic component that handles map events
+// Create a dynamic component that handles map events and resizing
 const MapEventsComponent = dynamic(() =>
   import('react-leaflet').then((mod) => {
     const { useMapEvents } = mod;
 
-    return function MapEventHandler({ onPinDrop }: { onPinDrop: (lat: number, lng: number) => void }) {
-      useMapEvents({
+    return function MapEventHandler({
+      onPinDrop,
+      triggerResize
+    }: {
+      onPinDrop: (lat: number, lng: number) => void;
+      triggerResize?: number;
+    }) {
+      const map = useMapEvents({
         click: (e: { latlng: { lat: number; lng: number } }) => {
           const { lat, lng } = e.latlng;
           console.log('Pin dropped at coordinates:', { lat, lng });
           onPinDrop(lat, lng);
         },
       });
+
+      // Initial map size fix on mount
+      React.useEffect(() => {
+        setTimeout(() => {
+          map.invalidateSize();
+        }, 100);
+      }, [map]);
+
+      // Invalidate map size when triggerResize changes
+      React.useEffect(() => {
+        if (triggerResize !== undefined && triggerResize > 0) {
+          setTimeout(() => {
+            map.invalidateSize();
+          }, 350); // Slightly longer delay to let CSS transition complete
+        }
+      }, [triggerResize, map]);
+
       return null;
     };
   }),
   { ssr: false }
 );
 
-export function CampusMap({ onPinDrop, selectedLocation, className = '' }: CampusMapProps) {
+export function CampusMap({ onPinDrop, selectedLocation, className = '', triggerResize }: CampusMapProps) {
   const [mounted, setMounted] = useState(false);
   const [pinPosition, setPinPosition] = useState<[number, number] | null>(null);
   const [L, setL] = useState<typeof import('leaflet') | null>(null);
@@ -112,9 +135,12 @@ export function CampusMap({ onPinDrop, selectedLocation, className = '' }: Campu
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          maxZoom={MAX_ZOOM}
+          tileSize={256}
+          keepBuffer={2}
         />
 
-        <MapEventsComponent onPinDrop={handlePinDrop} />
+        <MapEventsComponent onPinDrop={handlePinDrop} triggerResize={triggerResize} />
 
         {pinPosition && (
           <Marker position={pinPosition} />
