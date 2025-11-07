@@ -2,46 +2,27 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
-// Configure API route to accept larger payloads (50MB)
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '50mb',
-    },
-  },
-};
-
 // Runtime configuration for route
 export const runtime = 'nodejs';
 export const maxDuration = 60; // 60 seconds timeout
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse FormData instead of JSON
-    const formData = await request.formData();
-    const file = formData.get("file") as File | null;
-    const latitude = formData.get("latitude");
-    const longitude = formData.get("longitude");
-    const username = formData.get("username");
+    // Parse JSON metadata (file is already uploaded to Supabase Storage from client)
+    const body = await request.json();
+    const { imageUrl, fileName, latitude, longitude, userId } = body;
 
     // Validate required fields
-    if (!file || latitude === null || longitude === null || !username) {
+    if (!imageUrl || !fileName || latitude === undefined || longitude === undefined || !userId) {
       return NextResponse.json(
-        { error: "Missing required fields: file, latitude, longitude, username" },
+        { error: "Missing required fields: imageUrl, fileName, latitude, longitude, userId" },
         { status: 400 }
       );
     }
 
     // Validate data types
-    if (!(file instanceof File)) {
-      return NextResponse.json(
-        { error: "file must be a File object" },
-        { status: 400 }
-      );
-    }
-
-    const lat = parseFloat(latitude as string);
-    const lng = parseFloat(longitude as string);
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
 
     if (isNaN(lat) || isNaN(lng)) {
       return NextResponse.json(
@@ -62,78 +43,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify the username matches the authenticated user
-    if (user.id !== username) {
+    // Verify the userId matches the authenticated user
+    if (user.id !== userId) {
       return NextResponse.json(
-        { error: "Unauthorized - username does not match authenticated user" },
+        { error: "Unauthorized - userId does not match authenticated user" },
         { status: 403 }
       );
     }
 
-    // Security: Check file size (limit to 4.5MB for Vercel)
-    // Vercel Hobby plan has 4.5MB body size limit
-    if (file.size > 4.5 * 1024 * 1024) {
+    // Verify the imageUrl is from our Supabase Storage (security check)
+    const supabaseStorageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/images/`;
+    if (!imageUrl.startsWith(supabaseStorageUrl)) {
       return NextResponse.json(
-        { error: "File too large. Maximum size is 4.5MB. Please compress your image." },
-        { status: 413 }
-      );
-    }
-
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      return NextResponse.json(
-        { error: "File must be an image" },
+        { error: "Invalid image URL - must be from Supabase Storage" },
         { status: 400 }
       );
     }
 
-    // Extract file extension from filename or mime type
-    let fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    if (!['jpg', 'jpeg', 'png', 'webp'].includes(fileExtension)) {
-      fileExtension = file.type.split('/')[1] || 'jpg';
-    }
-
-    // Convert File to Buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const imageBuffer = Buffer.from(arrayBuffer);
-
-    // Generate secure filename (remove username to avoid exposure)
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2, 15);
-    const fileName = `upload_${timestamp}_${randomString}.${fileExtension}`;
-
-    // Create service client for storage operations (bypasses RLS)
+    // Create service client for database operations (bypasses RLS)
     const serviceSupabase = createServiceClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // Upload to Supabase Storage using service role
-    const { error: uploadError } = await serviceSupabase.storage
-      .from('images')
-      .upload(fileName, imageBuffer, {
-        contentType: `image/${fileExtension}`,
-        upsert: false
-      });
-
-    if (uploadError) {
-      console.error("Supabase upload error:", uploadError);
-      return NextResponse.json(
-        { error: "Failed to upload image", details: uploadError.message },
-        { status: 500 }
-      );
-    }
-
-    // Get the public URL for the uploaded image
-    const { data: { publicUrl } } = serviceSupabase.storage
-      .from('images')
-      .getPublicUrl(fileName);
-
     // Insert location data into database using service client (bypasses RLS)
     const { data: locationData, error: dbError } = await serviceSupabase
       .from('locations')
       .insert({
-        image_url: publicUrl,
+        image_url: imageUrl,
         latitude: lat,
         longitude: lng,
         created_by: user.id
@@ -149,17 +86,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Return success response with image URL and location data
+    // Return success response with location data
     return NextResponse.json(
       {
         success: true,
-        message: "Image uploaded and location saved successfully",
+        message: "Location saved successfully",
         data: {
-          imageUrl: publicUrl,
+          imageUrl: imageUrl,
           fileName: fileName,
           latitude: lat,
           longitude: lng,
-          username,
+          userId,
           locationId: locationData.id
         }
       },

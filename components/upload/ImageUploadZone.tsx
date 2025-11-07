@@ -28,10 +28,10 @@ export default function ImageUploadZone({ onImageSelect, className = '' }: Image
       return;
     }
 
-    // Check file size (4.5MB limit for Vercel)
-    // Vercel has a 4.5MB limit on Hobby plan
-    if (file.size > 4.5 * 1024 * 1024) {
-      showNotification('error', 'File size must be less than 4.5MB. Please compress your image.');
+    // Check file size (50MB limit - Supabase Storage limit)
+    // No longer limited by Vercel since we upload directly to Supabase
+    if (file.size > 50 * 1024 * 1024) {
+      showNotification('error', 'File size must be less than 50MB. Please compress your image.');
       return;
     }
 

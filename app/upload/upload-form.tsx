@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -16,6 +17,7 @@ export default function UploadForm({ userId }: UploadFormProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const showNotification = (type: 'success' | 'error', message: string) => {
@@ -43,43 +45,76 @@ export default function UploadForm({ userId }: UploadFormProps) {
     }
 
     setIsSubmitting(true);
+    setUploadProgress(0);
 
     try {
-      // Create FormData to send file
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('latitude', coordinates.lat.toString());
-      formData.append('longitude', coordinates.lng.toString());
-      formData.append('username', userId);
+      // Step 1: Upload file directly to Supabase Storage (bypasses Vercel 4.5MB limit)
+      const supabase = createClient();
 
+      // Generate secure filename
+      const timestamp = Date.now();
+      const randomString = Math.random().toString(36).substring(2, 15);
+      const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `upload_${timestamp}_${randomString}.${fileExtension}`;
+
+      setUploadProgress(10);
+
+      // Upload directly to Supabase Storage from client
+      const { error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(fileName, selectedFile, {
+          contentType: selectedFile.type,
+          upsert: false
+        });
+
+      if (uploadError) {
+        throw new Error(`Upload failed: ${uploadError.message}`);
+      }
+
+      setUploadProgress(60);
+
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('images')
+        .getPublicUrl(fileName);
+
+      setUploadProgress(70);
+
+      // Step 2: Send only metadata to API route
       const response = await fetch('/api/upload-image', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageUrl: publicUrl,
+          fileName: fileName,
+          latitude: coordinates.lat,
+          longitude: coordinates.lng,
+          userId: userId,
+        }),
       });
+
+      setUploadProgress(90);
 
       if (!response.ok) {
         let errorMessage = 'Upload failed';
-
-        // Handle 413 specifically
-        if (response.status === 413) {
-          errorMessage = 'File too large. Try compressing the image or use a smaller file.';
-        } else {
-          try {
-            const errorData = await response.json();
-            errorMessage = errorData.error || errorMessage;
-          } catch {
-            errorMessage = `Upload failed (${response.status})`;
-          }
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          errorMessage = `Upload failed (${response.status})`;
         }
-
         throw new Error(errorMessage);
       }
 
+      setUploadProgress(100);
       showNotification('success', 'Image uploaded successfully!');
 
       // Reset form
       setSelectedFile(null);
       setCoordinates(null);
+      setUploadProgress(0);
     } catch (error) {
       console.error('Upload error:', error);
       showNotification('error', error instanceof Error ? error.message : 'Failed to upload image. Please try again.');
@@ -128,7 +163,11 @@ export default function UploadForm({ userId }: UploadFormProps) {
           size="lg"
           className="w-full"
         >
-          {isSubmitting ? 'Uploading...' : 'Submit Location'}
+          {isSubmitting
+            ? uploadProgress > 0
+              ? `Uploading... ${uploadProgress}%`
+              : 'Uploading...'
+            : 'Submit Location'}
         </Button>
       </div>
 
