@@ -31,6 +31,7 @@ interface CampusMapProps {
   selectedLocation?: { lat: number; lng: number } | null;
   className?: string;
   triggerResize?: number; // Change this value to trigger map resize
+  resetPin?: boolean; // Set to true to clear the pin
 }
 
 // Create a dynamic component that handles map events and resizing
@@ -75,7 +76,7 @@ const MapEventsComponent = dynamic(() =>
   { ssr: false }
 );
 
-export function CampusMap({ onPinDrop, selectedLocation, className = '', triggerResize }: CampusMapProps) {
+export function CampusMap({ onPinDrop, selectedLocation, className = '', triggerResize, resetPin }: CampusMapProps) {
   const [mounted, setMounted] = useState(false);
   const [pinPosition, setPinPosition] = useState<[number, number] | null>(null);
   const [L, setL] = useState<typeof import('leaflet') | null>(null);
@@ -97,10 +98,19 @@ export function CampusMap({ onPinDrop, selectedLocation, className = '', trigger
     });
   }, []);
 
+  // Reset pin when resetPin flag changes
+  useEffect(() => {
+    if (resetPin) {
+      setPinPosition(null);
+    }
+  }, [resetPin]);
+
   // Update pin position when selectedLocation changes
   useEffect(() => {
     if (selectedLocation) {
       setPinPosition([selectedLocation.lat, selectedLocation.lng]);
+    } else if (selectedLocation === null) {
+      setPinPosition(null);
     }
   }, [selectedLocation]);
 
