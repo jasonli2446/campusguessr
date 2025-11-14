@@ -61,6 +61,7 @@ export default function GameClient({
   const [timeLeft, setTimeLeft] = useState(60);
   const [showResult, setShowResult] = useState(false);
   const [roundResult, setRoundResult] = useState<RoundResult | null>(null);
+  const [autoAdvanceTimer, setAutoAdvanceTimer] = useState<NodeJS.Timeout | null>(null);
 
   const totalRounds = 5;
 
@@ -68,6 +69,15 @@ export default function GameClient({
   useEffect(() => {
     setMapResizeTrigger(prev => prev + 1);
   }, [isMapExpanded]);
+
+  // Cleanup auto-advance timer on unmount
+  useEffect(() => {
+    return () => {
+      if (autoAdvanceTimer) {
+        clearTimeout(autoAdvanceTimer);
+      }
+    };
+  }, [autoAdvanceTimer]);
 
   // Timer countdown
   useEffect(() => {
@@ -92,6 +102,11 @@ export default function GameClient({
   };
 
   const handleGuess = async () => {
+    // Prevent multiple submissions
+    if (isSubmitting || showResult) {
+      return;
+    }
+
     // If no guess, use center of campus (worst possible score)
     const guessLat = guessedLocation?.lat ?? 41.5045;
     const guessLng = guessedLocation?.lng ?? -81.6087;
@@ -119,9 +134,10 @@ export default function GameClient({
       setShowResult(true);
 
       // Auto-advance after 4 seconds
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         handleNextRound();
       }, 4000);
+      setAutoAdvanceTimer(timer);
 
     } catch (error) {
       console.error("Failed to submit guess:", error);
@@ -131,6 +147,12 @@ export default function GameClient({
   };
 
   const handleNextRound = () => {
+    // Clear the auto-advance timer if it exists (user clicked manually)
+    if (autoAdvanceTimer) {
+      clearTimeout(autoAdvanceTimer);
+      setAutoAdvanceTimer(null);
+    }
+
     if (roundResult?.gameComplete) {
       router.push(`/game/${gameSession.id}/results`);
     } else {

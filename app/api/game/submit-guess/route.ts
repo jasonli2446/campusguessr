@@ -63,6 +63,18 @@ export async function POST(request: NextRequest) {
 
     const score = calculateScore(distance);
 
+    // Check if a guess for this round already exists (prevent duplicate submissions)
+    const existingGuess = gameSession.guesses.find(
+      (g: { round: number }) => g.round === gameSession.current_round
+    );
+
+    if (existingGuess) {
+      return NextResponse.json(
+        { error: "Guess already submitted for this round" },
+        { status: 400 }
+      );
+    }
+
     // Update game session with the guess
     const newGuess = {
       round: gameSession.current_round,

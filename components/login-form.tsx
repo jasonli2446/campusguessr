@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export function LoginForm({
@@ -25,6 +25,7 @@ export function LoginForm({
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,8 +39,24 @@ export function LoginForm({
         password,
       });
       if (error) throw error;
-      // Update this route to redirect to an authenticated route. The user already has an active session.
-      router.push("/protected");
+
+      // Check if there's a returnTo URL parameter (for game association or other redirects)
+      const returnTo = searchParams.get("returnTo");
+
+      if (returnTo) {
+        // If returnTo is a results page, go to /protected which will handle game association
+        if (returnTo.includes("/results")) {
+          router.push(`/protected?returnTo=${encodeURIComponent(returnTo)}`);
+        } else {
+          // Otherwise go directly to the returnTo URL
+          router.push(returnTo);
+        }
+      } else {
+        // Default redirect to home page
+        router.push("/");
+      }
+
+      router.refresh(); // Refresh to update auth state
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {

@@ -1,5 +1,8 @@
 import { PlayButton } from "./play-button";
+import { Button } from "./ui/button";
+import Link from "next/link";
 import Image from "next/image";
+import { Trophy } from "lucide-react";
 
 export function LandingHero() {
   return (
@@ -28,6 +31,16 @@ export function LandingHero() {
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <PlayButton />
+          <Link href="/leaderboard">
+            <Button
+              variant="outline"
+              size="lg"
+              className="px-8 py-6 text-lg font-semibold border-2 border-cwru-blue dark:border-cwru-true-blue hover:bg-cwru-blue hover:text-white dark:hover:bg-cwru-true-blue transition-all gap-2"
+            >
+              <Trophy className="w-5 h-5" />
+              Leaderboard
+            </Button>
+          </Link>
         </div>
       </div>
     </section>
