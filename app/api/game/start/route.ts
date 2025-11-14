@@ -5,6 +5,9 @@ export async function POST() {
   try {
     const supabase = await createClient();
 
+    // Check if user is authenticated (optional - supports both anonymous and authenticated play)
+    const { data: { user } } = await supabase.auth.getUser();
+
     // Fetch all available locations
     const { data: locations, error: locationsError } = await supabase
       .from("locations")
@@ -37,6 +40,7 @@ export async function POST() {
         total_score: 0,
         location_ids: selectedLocationIds,
         guesses: [],
+        user_id: user?.id || null, // Store user ID if authenticated, null if anonymous
       })
       .select()
       .single();

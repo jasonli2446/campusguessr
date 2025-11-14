@@ -52,6 +52,8 @@ export async function updateSession(request: NextRequest) {
     "/",
     "/game",
     "/api/game",
+    "/api/leaderboard",
+    "/leaderboard",
     "/auth",
     "/login"
   ];

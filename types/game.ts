@@ -24,6 +24,22 @@ export interface GameSession {
   location_ids: string[]; // Array of 5 UUIDs
   guesses: Guess[]; // JSONB array
   created_at: string; // TIMESTAMPTZ (ISO string)
+  user_id?: string | null; // UUID reference to auth.users (nullable for anonymous play)
+}
+
+export interface Profile {
+  id: string; // UUID (FK to auth.users.id)
+  username: string; // Unique display name
+  email: string;
+  created_at: string; // TIMESTAMPTZ (ISO string)
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  gameId: string;
+  username: string;
+  score: number;
+  createdAt: string;
 }
 
 // Utility types
