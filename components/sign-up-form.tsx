@@ -33,6 +33,13 @@ export function SignUpForm({
     setIsLoading(true);
     setError(null);
 
+    // Validate @case.edu email
+    if (!email.toLowerCase().endsWith("@case.edu")) {
+      setError("Only @case.edu email addresses are allowed");
+      setIsLoading(false);
+      return;
+    }
+
     if (password !== repeatPassword) {
       setError("Passwords do not match");
       setIsLoading(false);
@@ -67,11 +74,11 @@ export function SignUpForm({
           <form onSubmit={handleSignUp}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email (@case.edu only)</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="abc123@case.edu"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
