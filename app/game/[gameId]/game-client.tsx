@@ -86,19 +86,42 @@ export default function GameClient({
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         const newTime = Math.max(0, prev - 1);
-        // When timer reaches 0, auto-submit with current guess or center of campus
+        // When timer reaches 0, check if guess was placed
         if (newTime === 0 && !showResult && !isSubmitting) {
-          handleGuess();
+          if (guessedLocation) {
+            // Submit the guess if one was placed
+            handleGuess();
+          } else {
+            // No guess placed - award 0 points
+            handleNoGuess();
+          }
         }
         return newTime;
       });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, isSubmitting, showResult]);
+  }, [timeLeft, isSubmitting, showResult, guessedLocation]);
 
   const handlePinDrop = (lat: number, lng: number) => {
     setGuessedLocation({ lat, lng });
+  };
+
+  const handleNoGuess = () => {
+    // Player didn't make a guess - award 0 points
+    setRoundResult({
+      distance: 0,
+      score: 0,
+      totalScore: gameSession.total_score,
+      gameComplete: gameSession.current_round >= totalRounds,
+    });
+    setShowResult(true);
+
+    // Auto-advance after 4 seconds
+    const timer = setTimeout(() => {
+      handleNextRound();
+    }, 4000);
+    setAutoAdvanceTimer(timer);
   };
 
   const handleGuess = async () => {
@@ -107,9 +130,13 @@ export default function GameClient({
       return;
     }
 
-    // If no guess, use center of campus (worst possible score)
-    const guessLat = guessedLocation?.lat ?? 41.5045;
-    const guessLng = guessedLocation?.lng ?? -81.6087;
+    // Early return if no guess was placed
+    if (!guessedLocation) {
+      return;
+    }
+
+    const guessLat = guessedLocation.lat;
+    const guessLng = guessedLocation.lng;
 
     setIsSubmitting(true);
 
@@ -271,34 +298,47 @@ export default function GameClient({
               {/* Round Complete Header */}
               <div>
                 <h2 className="text-3xl font-bold text-cwru-blue dark:text-cwru-light-blue mb-2">
-                  Round {gameSession.current_round} Complete!
+                  {roundResult.score === 0 && roundResult.distance === 0
+                    ? `Time's Up!`
+                    : `Round ${gameSession.current_round} Complete!`}
                 </h2>
+                {roundResult.score === 0 && roundResult.distance === 0 && (
+                  <p className="text-lg text-red-600 dark:text-red-400 font-medium">
+                    No guess placed
+                  </p>
+                )}
               </div>
 
               {/* Distance */}
-              <div className="space-y-2">
-                <div className="text-sm text-gray-500 dark:text-gray-400 uppercase font-medium">
-                  Distance
+              {!(roundResult.score === 0 && roundResult.distance === 0) && (
+                <div className="space-y-2">
+                  <div className="text-sm text-gray-500 dark:text-gray-400 uppercase font-medium">
+                    Distance
+                  </div>
+                  <div className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+                    {formatDistance(roundResult.distance)}
+                  </div>
+                  <div className="text-lg text-green-600 dark:text-green-400 font-semibold">
+                    {getDistanceQuality(roundResult.distance)}
+                  </div>
                 </div>
-                <div className="text-4xl font-bold text-gray-900 dark:text-gray-100">
-                  {formatDistance(roundResult.distance)}
-                </div>
-                <div className="text-lg text-green-600 dark:text-green-400 font-semibold">
-                  {getDistanceQuality(roundResult.distance)}
-                </div>
-              </div>
+              )}
 
               {/* Score */}
               <div className="space-y-2">
                 <div className="text-sm text-gray-500 dark:text-gray-400 uppercase font-medium">
                   Points Earned
                 </div>
-                <div className="text-5xl font-bold text-green-600 dark:text-green-400">
+                <div className={`text-5xl font-bold ${
+                  roundResult.score === 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
+                }`}>
                   +{formatScore(roundResult.score)}
                 </div>
-                <div className="text-lg text-cwru-blue dark:text-cwru-light-blue font-semibold">
-                  {getScoreQuality(roundResult.score, 5000)}
-                </div>
+                {!(roundResult.score === 0 && roundResult.distance === 0) && (
+                  <div className="text-lg text-cwru-blue dark:text-cwru-light-blue font-semibold">
+                    {getScoreQuality(roundResult.score, 5000)}
+                  </div>
+                )}
               </div>
 
               {/* Total Score */}
