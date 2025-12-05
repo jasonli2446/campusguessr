@@ -2,9 +2,10 @@
 
 import { useState, useRef } from 'react';
 import Image from 'next/image';
+import heic2any from 'heic2any';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 interface ImageUploadZoneProps {
   onImageSelect: (file: File | null) => void;
@@ -14,6 +15,7 @@ interface ImageUploadZoneProps {
 export default function ImageUploadZone({ onImageSelect, className = '' }: ImageUploadZoneProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isConverting, setIsConverting] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -22,8 +24,27 @@ export default function ImageUploadZone({ onImageSelect, className = '' }: Image
     setTimeout(() => setNotification(null), 3000);
   };
 
+  const isHeicFile = (file: File): boolean => {
+    const fileName = file.name.toLowerCase();
+    return fileName.endsWith('.heic') || fileName.endsWith('.heif') ||
+           file.type === 'image/heic' || file.type === 'image/heif';
+  };
+
+  const convertHeicToJpeg = async (file: File): Promise<File> => {
+    const blob = await heic2any({
+      blob: file,
+      toType: 'image/jpeg',
+      quality: 0.9,
+    }) as Blob;
+
+    const newFileName = file.name.replace(/\.(heic|heif)$/i, '.jpg');
+    return new File([blob], newFileName, { type: 'image/jpeg' });
+  };
+
   const handleFileSelect = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
+    // Check if it's an image (including HEIC which may have empty type)
+    const isImage = file.type.startsWith('image/') || isHeicFile(file);
+    if (!isImage) {
       showNotification('error', 'Please select an image file');
       return;
     }
@@ -36,11 +57,21 @@ export default function ImageUploadZone({ onImageSelect, className = '' }: Image
     }
 
     try {
-      setPreview(URL.createObjectURL(file));
-      onImageSelect(file);
+      let processedFile = file;
+
+      // Convert HEIC to JPEG
+      if (isHeicFile(file)) {
+        setIsConverting(true);
+        processedFile = await convertHeicToJpeg(file);
+        setIsConverting(false);
+      }
+
+      setPreview(URL.createObjectURL(processedFile));
+      onImageSelect(processedFile);
     } catch (error) {
+      setIsConverting(false);
       console.error('Error processing image:', error);
-      showNotification('error', 'Failed to process image');
+      showNotification('error', 'Failed to process image. Try converting HEIC to JPG first.');
     }
   };
 
@@ -84,7 +115,14 @@ export default function ImageUploadZone({ onImageSelect, className = '' }: Image
   return (
     <Card className={className}>
       <CardContent className="p-6">
-        {!preview ? (
+        {isConverting ? (
+          <div className="border-2 border-dashed rounded-lg p-8 text-center border-gray-300">
+            <Loader2 className="mx-auto h-12 w-12 text-gray-400 animate-spin" />
+            <p className="mt-2 text-sm text-gray-600">
+              Converting HEIC to JPEG...
+            </p>
+          </div>
+        ) : !preview ? (
           <div
             onClick={() => fileInputRef.current?.click()}
             onDrop={handleDrop}
@@ -101,12 +139,12 @@ export default function ImageUploadZone({ onImageSelect, className = '' }: Image
               Click to upload or drag and drop
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              360° campus images (JPG, PNG, etc.)
+              360° campus images (JPG, PNG, HEIC)
             </p>
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/*,.heic,.heif"
               onChange={handleInputChange}
               className="hidden"
             />
