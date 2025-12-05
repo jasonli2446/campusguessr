@@ -19,6 +19,7 @@ export default function UploadForm({ userId }: UploadFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [resetKey, setResetKey] = useState(0);
 
   const showNotification = (type: 'success' | 'error', message: string) => {
     setNotification({ type, message });
@@ -115,6 +116,7 @@ export default function UploadForm({ userId }: UploadFormProps) {
       setSelectedFile(null);
       setCoordinates(null);
       setUploadProgress(0);
+      setResetKey((prev: number) => prev + 1);
     } catch (error) {
       console.error('Upload error:', error);
       showNotification('error', error instanceof Error ? error.message : 'Failed to upload image. Please try again.');
@@ -131,7 +133,7 @@ export default function UploadForm({ userId }: UploadFormProps) {
       <div className="space-y-6">
         <div>
           <Label className="text-lg font-semibold mb-2 block">1. Upload Image</Label>
-          <ImageUploadZone onImageSelect={handleImageSelect} />
+          <ImageUploadZone key={resetKey} onImageSelect={handleImageSelect} />
         </div>
 
         {/* Coordinates display */}
@@ -176,7 +178,7 @@ export default function UploadForm({ userId }: UploadFormProps) {
         <Label className="text-lg font-semibold mb-2 block">2. Select Location</Label>
         <Card className="h-[450px]">
           <CardContent className="p-4 h-full">
-            <CampusMap onPinDrop={handlePinDrop} className="h-full" />
+            <CampusMap onPinDrop={handlePinDrop} className="h-full" resetPin={resetKey > 0 && !coordinates} />
           </CardContent>
         </Card>
       </div>
