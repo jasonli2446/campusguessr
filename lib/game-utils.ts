@@ -33,13 +33,20 @@ export function calculateDistance(
 
 /**
  * Calculate score based on distance
- * Exponential decay: 5000 points at 0m, drops off quickly with distance
+ * Perfect score (5000) for <20m, then gentler exponential decay
  * @param distanceMeters Distance in meters
  * @returns Score between 0 and 5000
  */
 export function calculateScore(distanceMeters: number): number {
-  const k = 0.006; // Decay constant - tuned so right building (~20-30m) gets 4000+ pts
-  const score = Math.round(5000 * Math.exp(-k * distanceMeters));
+  // Perfect score for anything within 20m
+  if (distanceMeters <= 20) {
+    return 5000;
+  }
+
+  // Gentler exponential decay starting from 20m
+  const k = 0.004;
+  const adjustedDistance = distanceMeters - 20;
+  const score = Math.round(5000 * Math.exp(-k * adjustedDistance));
 
   // Clamp between 0 and 5000
   return Math.max(0, Math.min(5000, score));
